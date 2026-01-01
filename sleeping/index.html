@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sleeping • Drogo Protocol</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/style.css">
+
+  <style>
+    .thumb-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    .clickable-img{
+      width:100%;
+      height:auto;
+      display:block;
+      border-radius:12px;
+      cursor: zoom-in;
+      transition: transform 0.15s ease;
+    }
+    .clickable-img:hover{ transform: scale(1.02); }
+
+    .lightbox{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 16px;
+    }
+    .lightbox img{
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 14px;
+      cursor: zoom-out;
+    }
+    .lightbox.active{ display:flex; }
+  </style>
+</head>
+<body>
+
+<div class="navwrap">
+  <nav class="nav">
+    <div class="brand">Drogo Protocol 🐈</div>
+    <div class="menu">
+      <a href="/">Home</a>
+      <a href="/food/">Food</a>
+      <a href="/meds/">Meds</a>
+      <a href="/litter/">Litter</a>
+      <a href="/cat-hides/">Cat Hides</a>
+      <a class="active" href="/sleeping/">Sleeping</a>
+      <a href="/emergency/">Emergency</a>
+      <a href="/cat-pics/">Cat Pics</a>
+      <a href="/other-stuff/">Other Stuff</a>
+    </div>
+  </nav>
+</div>
+
+<div class="container">
+  <h1>Sleeping</h1>
+
+  <div class="card">
+    <h2>Lazy Cat Behaviour</h2>
+    <ul>
+      <li>Will sleep on Alicia's pillow often (she loves knowing this).</li>
+      <li>Big Orange Alfresco Cusion is a hot runner up sleep spot.</li>
+      <li>Sleeps more than anyone has any right to, has zero remorse.</li>
+      <li>You MAY earn a snuggle, only time will tell. - HINT He is exclusively little spoon.</li>
+    </ul>
+    <p class="muted">
+      Cats sleep in strange positions and locations.  
+      If his head is upside down it means he is happy or hungry, who knows.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Common Sleeping Spots (Photo Reference)</h2>
+
+    <div class="thumb-grid">
+      <img src="drogo-1.jpg" class="clickable-img" alt="Drogo sleeping spot 1" loading="lazy">
+      <img src="drogo-2.jpg" class="clickable-img" alt="Drogo sleeping spot 2" loading="lazy">
+    </div>
+
+    <p class="muted" style="margin-top:10px;">
+      Tap an image to view full size.
+    </p>
+  </div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <img src="" alt="Expanded sleeping image">
+</div>
+
+<script>
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = lightbox.querySelector('img');
+
+  document.querySelectorAll('.clickable-img').forEach(img => {
+    img.addEventListener('click', () => {
+      lightboxImg.src = img.src;
+      lightbox.classList.add('active');
+    });
+  });
+
+  lightbox.addEventListener('click', () => {
+    lightbox.classList.remove('active');
+    lightboxImg.src = '';
+  });
+</script>
+
+</body>
+</html>
