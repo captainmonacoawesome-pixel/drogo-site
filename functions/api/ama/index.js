@@ -33,6 +33,7 @@ async function alertStaffOfPendingQuestion(topicUrl) {
   try {
     const response = await fetch(target.href, {
       method: "POST",
+      redirect: "error",
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Title": "Drogo Protocol - AMA",
@@ -59,7 +60,8 @@ export async function onRequestGet({env}) {
     return json({questions: result.results || []});
   } catch (err) { console.error("AMA read failed", err); return json({error: "Board is temporarily unavailable"}, 503); }
 }
-export async function onRequestPost({request, env, waitUntil}) {
+export async function onRequestPost(context) {
+  const {request, env} = context;
   if (!env.DB || !env.TURNSTILE_SECRET || !env.RATE_LIMIT_PEPPER || !env.TURNSTILE_SITE_KEY)
     return json({error: "Questions are not open yet"}, 503);
   const url = new URL(request.url);
@@ -107,8 +109,8 @@ export async function onRequestPost({request, env, waitUntil}) {
     ]);
     // Queue one notification only after the database batch has committed.
     // The question's acceptance is not dependent on the push service.
-    if (env.AMA_NTFY_URL && typeof waitUntil === "function") {
-      waitUntil(alertStaffOfPendingQuestion(env.AMA_NTFY_URL));
+    if (env.AMA_NTFY_URL && typeof context.waitUntil === "function") {
+      context.waitUntil(alertStaffOfPendingQuestion(env.AMA_NTFY_URL));
     }
     return json({ok:true,message:"Your question is awaiting the cat's approval."},202);
   } catch (err) { console.error("AMA submission failed",err); return json({error:"Unable to save question"},503); }
