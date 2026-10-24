@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Ask Drogo anything. A magnificently opinionated cat answers life's burning questions.">
+  <title>Ask Meow Anything · Drogo Protocol</title>
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/ama.css">
+  <script src="/assets/ama.js" defer></script>
+</head>
+<body>
+<div class="navwrap"><nav class="nav">
+  <div class="brand">Drogo Protocol 🐈</div>
+  <div class="menu">
+    <a href="/">Home</a>
+    <a class="active" href="/ask-meow-anything/">Ask Meow Anything</a>
+    <a href="/cat-pics/">Cat Pics</a>
+    <a href="/food/">Food</a>
+  </div>
+</nav></div>
+<main class="container">
+  <header class="ama-hero">
+    <p class="ama-eyebrow">A PUBLIC AUDIENCE WITH HIS MAJESTY</p>
+    <h1>Ask Meow Anything<span class="ama-paw"> ✦</span></h1>
+    <p class="ama-lede">You have questions. Drogo has opinions. Whether those opinions are helpful is entirely beside the point.</p>
+    <span class="ama-seal">Official advice from an unqualified cat</span>
+  </header>
+
+  <section class="card ama-form-card" aria-labelledby="ask-title">
+    <h2 id="ask-title">Submit your question</h2>
+    <p class="muted">The cat reads every submission. His humans may assist with the typing. Questions are reviewed before appearing publicly.</p>
+    <form id="ama-form" novalidate>
+      <label for="ask-name">Your name or alias</label>
+      <input id="ask-name" name="name" maxlength="60" required autocomplete="nickname" placeholder="e.g. Stephen, Keeper of the Treats">
+      <label for="ask-question">What would you like to ask Drogo?</label>
+      <textarea id="ask-question" name="question" maxlength="1200" minlength="10" rows="5" required placeholder="Dear Drogo, why do you insist on sitting on my laptop?"></textarea>
+      <div class="ama-trap" aria-hidden="true"><label for="ask-website">Leave blank</label><input id="ask-website" name="website" tabindex="-1" autocomplete="off"></div>
+      <div id="turnstile-container" aria-label="Spam verification"></div>
+      <button class="ama-button" type="submit" id="ask-submit" disabled>Submit to the Cat</button>
+      <p class="ama-status" id="ama-status" role="status" aria-live="polite">Checking whether the royal correspondence desk is open…</p>
+    </form>
+    <p class="muted small">Please don't include private contact details, medical information or anything you don't want published.</p>
+  </section>
+
+  <section class="ama-answers" aria-labelledby="answers-title">
+    <div class="ama-section-head"><div><p class="ama-eyebrow">THE OFFICIAL RECORD</p><h2 id="answers-title">The Cat Has Spoken</h2></div><span class="ama-count" id="ama-count">…</span></div>
+    <div id="ama-questions" aria-live="polite"><p class="muted">Consulting the feline archives…</p></div>
+  </section>
+  <p class="ama-footnote">All answers are approved by Drogo's human staff. This is not professional advice; the author regularly eats cardboard.</p>
+</main>
+</body>
+</html>
