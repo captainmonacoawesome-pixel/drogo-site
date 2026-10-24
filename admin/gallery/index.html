@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Royal Photography Department · Drogo Protocol</title>
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/cat-gallery.css">
+<script src="/assets/cat-gallery-admin.js" defer></script>
+</head>
+<body>
+<div class="navwrap"><nav class="nav">
+  <div class="brand">Drogo Protocol · Staff Only</div>
+  <div class="menu"><a href="/admin/ama/">Answer Questions</a><a href="/cat-pics/">Public Gallery</a></div>
+</nav></div>
+<main class="container">
+<header class="cat-gallery-hero">
+  <p class="cat-eyebrow">PRIVATE ROYAL PHOTOGRAPHY DEPARTMENT</p>
+  <h1>Publish a Cat Pic</h1>
+  <p class="muted">Choose a photo from your iPhone, add a caption, and publish it for the fan club.</p>
+</header>
+<section class="card">
+  <h2>New photograph</h2>
+  <form id="cat-upload">
+    <label class="cat-file-label" for="cat-file">📸 Choose from Photos or take a picture</label>
+    <input id="cat-file" name="photo" type="file" accept="image/*" required>
+    <img id="cat-upload-preview" hidden alt="Photo preview">
+    <label for="cat-caption">Caption <span class="muted">(optional)</span></label>
+    <textarea id="cat-caption" name="caption" maxlength="300" rows="3" placeholder="A truly exhausting day of being admired."></textarea>
+    <label class="cat-feature-checkbox"><input id="cat-feature" type="checkbox"> Make this Cat Pic of the Day</label>
+    <button class="cat-primary" id="cat-upload-button" type="submit">Publish photo</button>
+    <p id="cat-upload-status" role="status" aria-live="polite">Images are resized on your phone before upload.</p>
+  </form>
+</section>
+<section class="cat-gallery-section">
+  <h2>Published photos</h2>
+  <p class="muted">Tap “Feature today” to pick a different daily portrait.</p>
+  <p id="cat-admin-status" role="status"></p>
+  <div id="cat-admin-grid" class="cat-gallery-grid"></div>
+</section>
+</main>
+</body></html>
