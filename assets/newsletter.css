@@ -16,6 +16,7 @@
 .jerk-subscribe{background:#101b31;padding:20px;border:1px solid #746042;border-radius:14px;margin-top:20px}
 .jerk-button{background:var(--jerk-gold);color:#141b2a;display:inline-block;border-radius:9px;padding:13px 18px;font-weight:800}
 .jerk-button:hover{color:#111;text-decoration:none;background:#ffe0a7}
+.jerk-button[hidden],.jerk-coming-soon[hidden]{display:none}
 .jerk-coming-soon{margin:0;color:#f6deb4;font-weight:750}
 .jerk-small{font-size:.82rem;color:#aab7c9!important;margin-bottom:0}
 .jerk-content{border-top:1px solid #344259;margin-top:35px;padding-top:32px}
