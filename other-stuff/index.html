@@ -5,14 +5,20 @@
   <title>Other Stuff • Drogo Protocol</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/assets/style.css">
+  <script src="/assets/site-nav.js" defer></script>
 </head>
 <body>
 
 <div class="navwrap">
-  <nav class="nav">
-    <div class="brand">Drogo Protocol 🐈</div>
-    <div class="menu">
+  <nav class="nav" aria-label="Main navigation">
+  <div class="brand">Drogo Protocol 🐈</div>
+  <button type="button" class="nav-toggle" aria-controls="primary-navigation" aria-expanded="false" aria-label="Toggle main navigation">
+    <span aria-hidden="true">☰</span> Menu
+  </button>
+  <div class="menu" id="primary-navigation">
       <a href="/">Home</a>
+      <a href="/ask-meow-anything/">Ask Meow Anything</a>
+      <a href="/weekly-mush/">The Weekly Mush</a>
       <a href="/food/">Food</a>
       <a href="/meds/">Meds</a>
       <a href="/litter/">Litter</a>
@@ -20,9 +26,9 @@
       <a href="/sleeping/">Sleeping</a>
       <a href="/emergency/">Emergency</a>
       <a href="/cat-pics/">Cat Pics</a>
-      <a class="active" href="/other-stuff/">Other Stuff</a>
-    </div>
-  </nav>
+      <a href="/other-stuff/" class="active" aria-current="page">Other Stuff</a>
+  </div>
+</nav>
 </div>
 
 <div class="container">
