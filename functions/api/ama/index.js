@@ -11,6 +11,45 @@ async function ipDigest(ip, pepper) {
   const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(ip));
   return Array.from(new Uint8Array(signature), byte => byte.toString(16).padStart(2,"0")).join("");
 }
+// Optional, outbound-only push notification. Store the ntfy topic as an
+// encrypted AMA_NTFY_URL secret in Cloudflare Pages (production/preview separately).
+// Never include a submitted question, name, IP or token in the notification.
+async function alertStaffOfPendingQuestion(topicUrl) {
+  let target;
+  try {
+    target = new URL(topicUrl);
+  } catch (_) {
+    console.warn("AMA alert skipped: invalid ntfy configuration");
+    return;
+  }
+  // Deliberately allowlist the public ntfy service to prevent fetching arbitrary
+  // hosts should a Pages configuration value be mistyped or compromised.
+  if (target.protocol !== "https:" || target.hostname !== "ntfy.sh" ||
+      target.username || target.password || target.search || target.hash ||
+      !/^\/[a-zA-Z0-9_-]{16,64}$/.test(target.pathname)) {
+    console.warn("AMA alert skipped: unsupported ntfy destination");
+    return;
+  }
+  try {
+    const response = await fetch(target.href, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Title": "Drogo Protocol - AMA",
+        "Priority": "3",
+        "Tags": "envelope",
+        "Click": "https://drogo.carmensandiego666.xyz/admin/ama/",
+        "Cache": "no"
+      },
+      body: "A new question awaits His Lordship's approval."
+    });
+    if (!response.ok) console.warn("AMA alert delivery failed (HTTP " + response.status + ")");
+  } catch (_) {
+    // Notification delivery must never prevent a successfully saved question.
+    console.warn("AMA alert delivery failed");
+  }
+}
+
 export async function onRequestGet({env}) {
   if (!env.DB) return json({questions: [], message: "The cat is preparing his throne."}, 503);
   try {
@@ -20,7 +59,7 @@ export async function onRequestGet({env}) {
     return json({questions: result.results || []});
   } catch (err) { console.error("AMA read failed", err); return json({error: "Board is temporarily unavailable"}, 503); }
 }
-export async function onRequestPost({request, env}) {
+export async function onRequestPost({request, env, waitUntil}) {
   if (!env.DB || !env.TURNSTILE_SECRET || !env.RATE_LIMIT_PEPPER || !env.TURNSTILE_SITE_KEY)
     return json({error: "Questions are not open yet"}, 503);
   const url = new URL(request.url);
@@ -66,6 +105,11 @@ export async function onRequestPost({request, env}) {
         .bind(crypto.randomUUID(),name,question,now),
       env.DB.prepare("INSERT INTO ama_rate (ip_hash,created_at) VALUES (?,?)").bind(hash,now)
     ]);
+    // Queue one notification only after the database batch has committed.
+    // The question's acceptance is not dependent on the push service.
+    if (env.AMA_NTFY_URL && typeof waitUntil === "function") {
+      waitUntil(alertStaffOfPendingQuestion(env.AMA_NTFY_URL));
+    }
     return json({ok:true,message:"Your question is awaiting the cat's approval."},202);
   } catch (err) { console.error("AMA submission failed",err); return json({error:"Unable to save question"},503); }
 }
