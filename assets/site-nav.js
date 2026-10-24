@@ -25,7 +25,7 @@
   // inserted after Cloudflare Access validates the existing staff session.
   async function showStaffMenu() {
     if (!wrapper) return;
-    const staffPage = /^\\/admin\\/(?:ama|gallery)(?:\\/|$)/.test(location.pathname);
+    const staffPage = /^\/admin\/(?:ama|gallery)(?:\/|$)/.test(location.pathname);
     if (!staffPage) {
       try {
         // HEAD uses the already-protected /api/ama/admin route and verifies
