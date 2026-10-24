@@ -1,48 +1,35 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Cat Pics • Drogo Protocol</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>The Drogo Gallery · Drogo Protocol</title>
+  <meta name="description" content="An ongoing photographic record of Lord Squeak of Mushington, including Cat Pic of the Day.">
   <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/cat-gallery.css">
+  <script src="/assets/cat-gallery.js" defer></script>
 </head>
 <body>
-
-<div class="navwrap">
-  <nav class="nav">
-    <div class="brand">Drogo Protocol 🐈</div>
-    <div class="menu">
-      <a href="/">Home</a>
-      <a href="/food/">Food</a>
-      <a href="/meds/">Meds</a>
-      <a href="/litter/">Litter</a>
-      <a href="/cat-hides/">Cat Hides</a>
-      <a href="/sleeping/">Sleeping</a>
-      <a href="/emergency/">Emergency</a>
-      <a class="active" href="/cat-pics/">Cat Pics</a>
-      <a href="/other-stuff/">Other Stuff</a>
-    </div>
-  </nav>
-</div>
-
-<div class="container">
-  <h1>Cat Pics</h1>
-
-  <div class="card">
-  <h2>SEND CAT PICS</h2>
-
-<ul>
-  <li>As many and as often as you want.</li>
-  <li>There is no such thing as too many.</li>
-</ul>
-
-<p class="muted">
-  Seriously though, he's so cute — we love cat pics.
-  Cat pics MAY be uploaded and are considered the property of cats.
-</p>
-
-  </div>
-</div>
-
-</body>
-</html>
+<div class="navwrap"><nav class="nav">
+  <div class="brand">Drogo Protocol 🐈</div>
+  <div class="menu"><a href="/">Home</a><a href="/ask-meow-anything/">Ask Meow Anything</a><a class="active" href="/cat-pics/">Cat Pics</a></div>
+</nav></div>
+<main class="container">
+<header class="cat-gallery-hero">
+  <p class="cat-eyebrow">THE ILLUSTRATED CHRONICLES OF</p>
+  <h1>Lord Squeak of Mushington</h1>
+  <p class="muted">An official archive of unprecedented feline magnificence. All photographs approved by the household.</p>
+</header>
+<section id="cat-daily" class="cat-daily" hidden aria-labelledby="daily-title">
+  <p class="cat-eyebrow">THE DAILY DROGO</p>
+  <h2 id="daily-title">Cat Pic of the Day</h2>
+  <figure><img id="cat-daily-image" alt="" decoding="async">
+    <figcaption id="cat-daily-caption"></figcaption>
+  </figure>
+</section>
+<section class="cat-gallery-section">
+  <div class="cat-section-heading"><h2>The Royal Photo Gallery</h2><span id="cat-gallery-count">…</span></div>
+  <div id="cat-gallery-grid" class="cat-gallery-grid" aria-live="polite"><p class="muted">Preparing the royal portrait collection…</p></div>
+</section>
+<p class="cat-gallery-footer">More portraits will be published as His Lordship permits. 📸</p>
+</main>
+</body></html>
