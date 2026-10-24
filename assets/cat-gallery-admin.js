@@ -49,8 +49,17 @@
     list.replaceChildren();
     try{
       const r=await fetch("/api/gallery/admin",{cache:"no-store"});
-      if(!r.ok)throw new Error(r.status===401?"Cloudflare Access sign-in required.":"Unable to load portraits.");
-      const data=await r.json();
+      const isJson=(r.headers.get("content-type")||"").includes("application/json");
+      const data=isJson?await r.json():null;
+      if(!r.ok) {
+        const message=data?.error||(
+          r.status===401||r.status===403?
+          "Staff authentication was rejected. Please sign in through Cloudflare Access.":
+          "Gallery API returned HTTP "+r.status+"."
+        );
+        throw new Error(message+" (HTTP "+r.status+")");
+      }
+      if(!data)throw new Error("Gallery API returned an unexpected response rather than JSON.");
       const photos=Array.isArray(data.photos)?data.photos:[];
       adminStatus.textContent=photos.length+" published photograph(s)";
       if(!photos.length)adminStatus.textContent="No photographs published yet.";
@@ -97,8 +106,9 @@
       data.append("featured",document.querySelector("#cat-feature").checked?"true":"false");
       status.textContent="Publishing your photograph…";
       const r=await fetch("/api/gallery/admin",{method:"POST",body:data});
-      const response=await r.json();
-      if(!r.ok)throw new Error(response.error||"Publishing failed");
+      const response=(r.headers.get("content-type")||"").includes("application/json")?await r.json():null;
+      if(!r.ok)throw new Error((response?.error||"Publishing failed")+" (HTTP "+r.status+")");
+      if(!response)throw new Error("Upload API returned an unexpected response.");
       status.textContent="Published! Lord Squeak's admirers can now see this photo.";
       form.reset();clearPreview();await refresh();
     }catch(e){status.textContent=e.message||"Upload failed. Please retry."}
