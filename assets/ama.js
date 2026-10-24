@@ -31,10 +31,20 @@
         const article = element("article","ama-qa");
         article.append(element("p","ama-meta","A question from " + q.display_name));
         article.append(element("p","ama-question",q.question));
+        const answerRow = element("div", "ama-answer-row");
+        const avatar = element("img", "ama-answer-avatar");
+        avatar.src = "/assets/lord-squeak-typing.gif";
+        avatar.alt = "A black and white cat typing on a laptop";
+        avatar.loading = "lazy";
+        avatar.width = 104;
+        avatar.height = 104;
+        // Hide the avatar if the image hasn't been uploaded yet.
+        avatar.addEventListener("error", () => avatar.hidden = true);
         const answer = element("div","ama-answer");
-        answer.append(element("strong","", "Drogo replies"));
+        answer.append(element("strong","", "Lord Squeak replies"));
         answer.append(element("p","",q.answer || ""));
-        article.append(answer);
+        answerRow.append(avatar, answer);
+        article.append(answerRow);
         list.append(article);
       }
     } catch (_) {
