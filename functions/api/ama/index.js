@@ -39,12 +39,12 @@ async function alertStaffOfPendingQuestion(topicUrl) {
         "Title": "Drogo Protocol - AMA",
         "Priority": "3",
         "Tags": "envelope",
-        "Click": "https://drogo.carmensandiego666.xyz/admin/ama/",
-        "Cache": "no"
+        "Click": "https://drogo.carmensandiego666.xyz/admin/ama/"
       },
       body: "A new question awaits His Lordship's approval."
     });
     if (!response.ok) console.warn("AMA alert delivery failed (HTTP " + response.status + ")");
+    else console.info("AMA alert accepted by ntfy (HTTP " + response.status + ")");
   } catch (_) {
     // Notification delivery must never prevent a successfully saved question.
     console.warn("AMA alert delivery failed");
@@ -109,7 +109,11 @@ export async function onRequestPost(context) {
     ]);
     // Queue one notification only after the database batch has committed.
     // The question's acceptance is not dependent on the push service.
-    if (env.AMA_NTFY_URL && typeof context.waitUntil === "function") {
+    if (!env.AMA_NTFY_URL) {
+      console.warn("AMA alert skipped: AMA_NTFY_URL secret missing in this deployment");
+    } else if (typeof context.waitUntil !== "function") {
+      console.warn("AMA alert skipped: background task API unavailable");
+    } else {
       context.waitUntil(alertStaffOfPendingQuestion(env.AMA_NTFY_URL));
     }
     return json({ok:true,message:"Your question is awaiting the cat's approval."},202);
