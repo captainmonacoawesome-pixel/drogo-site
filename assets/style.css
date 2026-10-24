@@ -40,3 +40,14 @@ h2{margin:22px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
   .navwrap.nav-ready .menu:not(.is-open){display:none}
   .nav .menu a{display:block;text-align:left;padding:9px 12px}
 }
+
+/* Only inserted by JavaScript after Cloudflare Access confirms staff access. */
+.staff-shortcuts{position:fixed;right:16px;bottom:16px;z-index:90;color:var(--text);font:inherit}
+.staff-shortcuts summary{list-style:none;cursor:pointer;user-select:none;padding:11px 16px;background:#173354;color:#f8fafc;border:1px solid #60a5fa;border-radius:12px;font-weight:750;box-shadow:0 8px 28px rgba(0,0,0,.42)}
+.staff-shortcuts summary::-webkit-details-marker{display:none}
+.staff-shortcuts summary:hover,.staff-shortcuts[open] summary{background:#22517a}
+.staff-shortcuts summary:focus-visible,.staff-shortcuts a:focus-visible{outline:3px solid #93c5fd;outline-offset:3px}
+.staff-shortcuts-links{position:absolute;bottom:calc(100% + 9px);right:0;min-width:215px;display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:12px;border:1px solid var(--line);background:#111e35;box-shadow:0 10px 36px rgba(0,0,0,.55)}
+.staff-shortcuts-links a{display:block;padding:10px 12px;border-radius:8px;color:#e5e7eb}
+.staff-shortcuts-links a:hover,.staff-shortcuts-links a[aria-current="page"]{background:#244768;text-decoration:none}
+@media(max-width:420px){.staff-shortcuts{right:12px;bottom:12px}.staff-shortcuts summary{padding:9px 12px}.staff-shortcuts-links{min-width:210px}}

@@ -39,6 +39,17 @@ export async function verifyAccess(request, env) {
       decodeBase64Url(parts[2]),new TextEncoder().encode(parts[0]+"."+parts[1]));
   } catch (err) { console.error("Access verification failed",err); return false; }
 }
+// Lightweight login probe for the public site's staff-only shortcut.
+// Uses the exact same protected URL and signed Access JWT verification as
+// real moderation, without querying or returning private question data.
+export async function onRequestHead({request,env}) {
+  const allowed = await verifyAccess(request,env);
+  return new Response(null, {
+    status: allowed ? 204 : 401,
+    headers: {"Cache-Control":"no-store", "X-Content-Type-Options":"nosniff"}
+  });
+}
+
 export async function onRequestGet({request,env}) {
   if (!await verifyAccess(request,env)) return reply({error:"Unauthorized"},401);
   if (!env.DB) return reply({error:"Database not configured"},503);
