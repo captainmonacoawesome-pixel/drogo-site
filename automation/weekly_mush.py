@@ -89,11 +89,25 @@ def local_llm(photos, answers):
     material = {"photos": [p["caption"] for p in photos], "published_ama": answers}
     try:
         result = request_json(url, "POST", {
-            "model": model, "temperature": 0.8, "max_tokens": 650,
+            "model": model,
+            "temperature": 0.65,
+            "max_tokens": 1700,
+            # GLM-4.7-Flash normally reasons first; a small generation budget can
+            # exhaust in reasoning_content before producing message.content.
+            "chat_template_kwargs": {"enable_thinking": False},
+            "response_format": {"type": "json_object"},
             "messages": [{"role": "system", "content": prompt},
                          {"role": "user", "content": json.dumps(material)}]
-        }, timeout=90)
-        raw = result["choices"][0]["message"]["content"].strip()
+        }, timeout=150)
+        choice = result["choices"][0]
+        message = choice["message"]
+        raw = message.get("content") or ""
+        if not isinstance(raw, str) or not raw.strip():
+            raise ValueError(
+                "Empty model final reply (finish_reason=%s; reasoning chars=%d)" %
+                (choice.get("finish_reason"), len(message.get("reasoning_content") or ""))
+            )
+        raw = raw.strip()
         raw = re.sub(r"^" + chr(96)*3 + r"(?:json)?\s*|\s*" + chr(96)*3 + r"$", "", raw, flags=re.I)
         data = json.loads(raw)
         if not (8 <= len(data["headline"]) <= 70 and 200 <= len(data["editorial"]) <= 2200):
