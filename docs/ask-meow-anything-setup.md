@@ -17,6 +17,8 @@ The production website remains static until this PR is merged. Pages Functions a
 9. Update the site-wide security policy only via reviewed `_headers` changes. Specific Ask page policy allows Turnstile. Keep all other pages' strict CSP intact.
 10. After tests, merge the PR and confirm production bindings, Access protection and published experience.
 
+- Pages bindings and environment secrets configured after a build require a new preview deployment. Verify `/api/ama/config` returns `enabled: true` on the newest preview URL before attempting a question. The live site must remain unmodified.
+
 ## Abuse/security model
 
 - Public can read *published* questions only; all submissions begin `pending`.
