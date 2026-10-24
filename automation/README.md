@@ -12,7 +12,8 @@ Never touches Cloudflare D1/R2 credentials, pending questions or subscriber emai
 - Local llama.cpp OpenAI-compatible chat endpoint on localhost only. Fallback copy on model failure.
 - Escapes HTML and neutralises Brevo template interpolation in all generated/user text.
 - Brevo handles confirmed mailing-list membership and unsubscribe links.
-- Refuses mailing lists larger than 300 contacts (Brevo Free limit).
+- Refuses lists larger than **MUSH_MAX_RECIPIENTS** (defaults to 1 for the first live issue); 300 is the Brevo Free daily maximum.
+- The first real campaign may be sent to the existing one-person confirmed list; no separate test recipient is required.
 - Stores an ISO-week state before network sends; failed attempts cannot silently resend.
 - Optional ntfy HTTPS alert on success/failure.
 
@@ -28,7 +29,7 @@ Confirm the local model URL/port and model name before testing.
 Do not paste API keys into GitHub or chat.
 
 ### Dry-run
-MUSH_LLM_URL=http://127.0.0.1:8081/v1/chat/completions MUSH_LLM_MODEL=glm-4.7-flash python3 automation/weekly_mush.py
+MUSH_LLM_URL=http://127.0.0.1:8081/v1/chat/completions MUSH_LLM_MODEL=GLM-4.7-Flash python3 automation/weekly_mush.py
 Open ~/.local/state/weekly-mush/preview.html in your browser.
 
 ### Systemd weekly timer
@@ -37,7 +38,7 @@ sudo install -m 644 automation/weekly-mush.timer /etc/systemd/system/
 sudo systemctl daemon-reload
 systemd-analyze calendar 'Sun *-*-* 19:00:00 Australia/Melbourne'
 
-Keep MUSH_SEND_ENABLED=0 while testing. Once the preview and Brevo API permissions are verified, set it to 1.
+For the first live one-person run, set MUSH_SEND_ENABLED=1, leave MUSH_MAX_RECIPIENTS=1, and start the systemd service manually while the timer is still disabled. This writes the same state the timer later uses. Check the email and service log before enabling the timer. Increase MUSH_MAX_RECIPIENTS later when you intend to email a larger audience.
 sudo systemctl enable --now weekly-mush.timer
 journalctl -u weekly-mush.service --since '14 days ago'
 
