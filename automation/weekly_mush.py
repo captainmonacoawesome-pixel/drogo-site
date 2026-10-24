@@ -233,6 +233,17 @@ def main():
     if count < 1:
         log.info("No subscribers; no email sent")
         return
+    try:
+        max_recipients = int(os.getenv("MUSH_MAX_RECIPIENTS", "1"))
+    except ValueError:
+        raise RuntimeError("MUSH_MAX_RECIPIENTS must be a positive integer")
+    if not 1 <= max_recipients <= 300:
+        raise RuntimeError("MUSH_MAX_RECIPIENTS must be between 1 and 300")
+    if count > max_recipients:
+        raise RuntimeError(
+            "Sending stopped: %d contacts on The Weekly Mush list; this publisher is limited to %d" %
+            (count, max_recipients)
+        )
     if count > 300:
         notify("The Weekly Mush NOT sent: subscriber count exceeds Brevo Free's 300/day limit.")
         raise RuntimeError("Brevo list exceeds 300 contacts; manual upgrade required")
