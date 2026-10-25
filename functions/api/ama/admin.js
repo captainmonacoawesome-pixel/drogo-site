@@ -1,3 +1,4 @@
+import {alertStaffOfPendingQuestion} from "./index.js";
 // Admin endpoints always verify a signed Cloudflare Access JWT.
 // Protect /admin/* and /api/ama/admin through Cloudflare Access as defense in depth.
 const reply = (data, status = 200) => Response.json(data, {
@@ -62,7 +63,6 @@ export async function onRequestGet({request,env}) {
 }
 export async function onRequestPost({request,env}) {
   if (!await verifyAccess(request,env)) return reply({error:"Unauthorized"},401);
-  if (!env.DB) return reply({error:"Database not configured"},503);
   if (request.headers.get("Origin") !== new URL(request.url).origin) return reply({error:"Origin rejected"},403);
   if (!(request.headers.get("Content-Type")||"").startsWith("application/json")) return reply({error:"JSON required"},415);
   let data;
@@ -71,6 +71,20 @@ export async function onRequestPost({request,env}) {
     if (text.length>6000) return reply({error:"Too large"},413);
     data=JSON.parse(text);
   }catch(_){return reply({error:"Invalid JSON"},400);}
+  // Staff-only, manually initiated end-to-end diagnostic. This uses the
+  // exact notification publisher used by new AMA submissions.
+  if (data.action === "test_notification") {
+    if (!env.AMA_NTFY_URL)
+      return reply({ok:false, reason:"missing_production_secret",
+        message:"AMA_NTFY_URL is missing from this Cloudflare Pages deployment"},503);
+    const result = await alertStaffOfPendingQuestion(env.AMA_NTFY_URL, true);
+    // Fingerprint helps compare topic configuration without disclosing the topic.
+    const hash = await crypto.subtle.digest("SHA-256",new TextEncoder().encode(env.AMA_NTFY_URL));
+    const topicFingerprint = Array.from(new Uint8Array(hash)).slice(0,6)
+      .map(v=>v.toString(16).padStart(2,"0")).join("");
+    return reply({...result,topicFingerprint},result.ok?200:502);
+  }
+  if (!env.DB) return reply({error:"Database not configured"},503);
   if (!/^[a-f0-9-]{36}$/.test(data.id||"")) return reply({error:"Invalid ID"},400);
   if (!["publish","reject"].includes(data.action)) return reply({error:"Invalid action"},400);
   const answer=typeof data.answer==="string" ? data.answer.trim() : "";

@@ -14,13 +14,13 @@ async function ipDigest(ip, pepper) {
 // Optional, outbound-only push notification. Store the ntfy topic as an
 // encrypted AMA_NTFY_URL secret in Cloudflare Pages (production/preview separately).
 // Never include a submitted question, name, IP or token in the notification.
-async function alertStaffOfPendingQuestion(topicUrl) {
+export async function alertStaffOfPendingQuestion(topicUrl, isTest = false) {
   let target;
   try {
     target = new URL(topicUrl);
   } catch (_) {
     console.warn("AMA alert skipped: invalid ntfy configuration");
-    return;
+    return {ok:false, reason:"invalid_ntfy_url"};
   }
   // Deliberately allowlist the public ntfy service to prevent fetching arbitrary
   // hosts should a Pages configuration value be mistyped or compromised.
@@ -28,7 +28,7 @@ async function alertStaffOfPendingQuestion(topicUrl) {
       target.username || target.password || target.search || target.hash ||
       !/^\/[a-zA-Z0-9_-]{16,64}$/.test(target.pathname)) {
     console.warn("AMA alert skipped: unsupported ntfy destination");
-    return;
+    return {ok:false, reason:"unsupported_ntfy_destination"};
   }
   try {
     const response = await fetch(target.href, {
@@ -41,13 +41,20 @@ async function alertStaffOfPendingQuestion(topicUrl) {
         "Tags": "envelope",
         "Click": "https://drogo.carmensandiego666.xyz/admin/ama/"
       },
-      body: "A new question awaits His Lordship's approval."
+      body: isTest
+        ? "TEST: This notification was sent directly by Drogo's Cloudflare admin API."
+        : "A new question awaits His Lordship's approval."
     });
-    if (!response.ok) console.warn("AMA alert delivery failed (HTTP " + response.status + ")");
-    else console.info("AMA alert accepted by ntfy (HTTP " + response.status + ")");
-  } catch (_) {
-    // Notification delivery must never prevent a successfully saved question.
-    console.warn("AMA alert delivery failed");
+    if (!response.ok) {
+      console.warn("AMA alert delivery failed (HTTP " + response.status + ")");
+      return {ok:false, reason:"ntfy_http_error", status:response.status};
+    }
+    console.info("AMA alert accepted by ntfy (HTTP " + response.status + ")");
+    return {ok:true, status:response.status};
+  } catch (error) {
+    // Never log the secret URL or user-provided question.
+    console.warn("AMA alert delivery failed", error?.name || "Error");
+    return {ok:false, reason:"ntfy_fetch_failed"};
   }
 }
 
