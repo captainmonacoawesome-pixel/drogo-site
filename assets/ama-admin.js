@@ -69,7 +69,26 @@
           cache:"no-store",
           body:JSON.stringify({action:"test_notification"})
         });
-        const result = await response.json();
+        const contentType = response.headers.get("content-type") || "unknown";
+        const raw = await response.text();
+        let result;
+        try {
+          result = JSON.parse(raw);
+        } catch (_) {
+          // Access redirects, challenge pages, and runtime failures can
+          // return HTML. Never display response bodies or sensitive tokens.
+          const redirected = response.redirected ? " after redirect" : "";
+          notificationStatus.textContent =
+            "Cloudflare returned HTTP " + response.status + redirected +
+            " (" + contentType.split(";")[0] +
+            "), not JSON. " +
+            (response.status === 401 || response.status === 403
+              ? "Check Cloudflare Access for this API."
+              : response.status >= 500
+                ? "Check Cloudflare Pages Function runtime logs."
+                : "Check Cloudflare's API request/security logs.");
+          return;
+        }
         if (result.reason === "missing_production_secret") {
           notificationStatus.textContent = "Cloudflare has no AMA_NTFY_URL secret in this deployment.";
         } else if (result.ok) {
@@ -81,8 +100,15 @@
             (result.status ? " ("+result.status+")" : "")+
             (result.topicFingerprint ? ". Topic fingerprint: "+result.topicFingerprint : "");
         }
-      } catch (_) {
-        notificationStatus.textContent = "Diagnostic request failed. Refresh or check Cloudflare Access.";
+      } catch (error) {
+        // Network errors (including CSP violations) are different from HTTP
+        // errors and have no Response/status to inspect.
+        notificationStatus.textContent =
+          "Browser could not complete diagnostic request: " +
+          (error && error.name === "TypeError"
+            ? "network request blocked or interrupted. Check browser Console."
+            : "request interrupted. Check browser Console.");
+        console.warn("AMA diagnostic browser request error:", error);
       } finally {
         testButton.disabled = false;
       }
