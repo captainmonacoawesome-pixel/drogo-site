@@ -55,5 +55,38 @@
     }catch(error){status.textContent=error.message;}
   }
   refresh.addEventListener("click",load);
+  const testButton = document.querySelector("#ama-test-notification");
+  const notificationStatus = document.querySelector("#ama-notification-status");
+  if (testButton && notificationStatus) {
+    testButton.addEventListener("click", async () => {
+      testButton.disabled = true;
+      notificationStatus.textContent = "Testing delivery from Cloudflare…";
+      try {
+        const response = await fetch("/api/ama/admin", {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          credentials:"same-origin",
+          cache:"no-store",
+          body:JSON.stringify({action:"test_notification"})
+        });
+        const result = await response.json();
+        if (result.reason === "missing_production_secret") {
+          notificationStatus.textContent = "Cloudflare has no AMA_NTFY_URL secret in this deployment.";
+        } else if (result.ok) {
+          notificationStatus.textContent = "ntfy accepted the test (HTTP "+result.status+
+            "). Check your phone. Topic fingerprint: "+result.topicFingerprint;
+        } else {
+          notificationStatus.textContent = "Cloudflare could not publish: "+
+            (result.reason || result.error || "HTTP "+response.status)+
+            (result.status ? " ("+result.status+")" : "")+
+            (result.topicFingerprint ? ". Topic fingerprint: "+result.topicFingerprint : "");
+        }
+      } catch (_) {
+        notificationStatus.textContent = "Diagnostic request failed. Refresh or check Cloudflare Access.";
+      } finally {
+        testButton.disabled = false;
+      }
+    });
+  }
   load();
 })();
