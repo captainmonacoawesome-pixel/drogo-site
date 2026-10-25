@@ -15,10 +15,8 @@
 <header class="ama-hero"><p class="ama-eyebrow">PRIVATE ROYAL CORRESPONDENCE</p><h1>Answer as Drogo</h1><p class="ama-lede">Review questions, reject nonsense, and publish the cat's considered judgments.</p></header>
 <div class="warning"><strong>Admin access:</strong> This screen must be protected by Cloudflare Access. The API also verifies a signed Access token and refuses unauthenticated changes.</div>
 <section class="ama-answers"><div class="ama-section-head"><h2>Awaiting Royal Judgment</h2><button class="ama-button" id="ama-refresh" type="button">Refresh</button></div><p id="ama-admin-status" role="status">Checking your credentials…</p><div id="ama-pending"></div></section>
-<section class="card" aria-labelledby="notification-test-title">
-  <h2 id="notification-test-title">AMA notification diagnostics</h2>
-  <p class="muted">Send a harmless test message directly from Cloudflare to your ntfy topic. This does not create or publish an AMA question.</p>
-  <button class="ama-button ama-button-secondary" type="button" id="ama-test-notification">Send test notification</button>
-  <p class="muted" id="ama-notification-status" role="status" aria-live="polite"></p>
+<section class="card" aria-labelledby="notification-info-title">
+  <h2 id="notification-info-title">AMA notifications</h2>
+  <p class="muted">New question alerts are delivered via the private Ripper notification relay. It checks for new submissions every minute and sends a notification to the staff ntfy topic. Existing questions remain here for moderation.</p>
 </section>
 </main></body></html>
