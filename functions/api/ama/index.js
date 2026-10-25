@@ -114,9 +114,12 @@ export async function onRequestPost(context) {
         .bind(crypto.randomUUID(),name,question,now),
       env.DB.prepare("INSERT INTO ama_rate (ip_hash,created_at) VALUES (?,?)").bind(hash,now)
     ]);
-    // Queue one notification only after the database batch has committed.
-    // The question's acceptance is not dependent on the push service.
-    if (!env.AMA_NTFY_URL) {
+    // Once the outbound Ripper poller is configured, do NOT also push from
+    // Cloudflare: Workers' shared outbound IPs may be blocked by ntfy.sh.
+    // The poller reads these D1 records and sends one notification itself.
+    if (env.AMA_ALERT_READ_TOKEN) {
+      console.info("AMA submission recorded for outbound Ripper notification poller");
+    } else if (!env.AMA_NTFY_URL) {
       console.warn("AMA alert skipped: AMA_NTFY_URL secret missing in this deployment");
     } else if (typeof context.waitUntil !== "function") {
       console.warn("AMA alert skipped: background task API unavailable");
