@@ -1,0 +1,11 @@
+[Unit]
+Description=Check Drogo AMA submissions every minute
+
+[Timer]
+OnBootSec=1min
+OnUnitInactiveSec=1min
+AccuracySec=10s
+Unit=drogo-ama-alerts.service
+
+[Install]
+WantedBy=timers.target
