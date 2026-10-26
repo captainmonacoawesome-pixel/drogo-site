@@ -71,14 +71,17 @@
         const caption=document.createElement("figcaption");
         caption.textContent=photo.caption||"His Lordship declined to comment.";
         card.append(image,caption);
+        const actions=document.createElement("div");
+        actions.className="cat-photo-actions";
+        let feature=null;
         if(photo.is_photo_of_day===1){
           const marker=document.createElement("p");marker.className="cat-photo-badge";
           marker.textContent="✦ CURRENT DAILY PHOTO";card.append(marker);
         }else{
-          const feature=document.createElement("button");
+          feature=document.createElement("button");
           feature.type="button";feature.textContent="Feature today";
           feature.addEventListener("click",async()=>{
-            feature.disabled=true;
+            feature.disabled=true;remove.disabled=true;
             try{
               const r=await fetch("/api/gallery/admin",{
                 method:"PATCH",headers:{"Content-Type":"application/json"},
@@ -86,10 +89,62 @@
               });
               const d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to feature");
               await refresh();
-            }catch(e){adminStatus.textContent=e.message;feature.disabled=false;}
+            }catch(e){adminStatus.textContent=e.message;feature.disabled=false;remove.disabled=false;}
           });
-          card.append(feature);
+          actions.append(feature);
         }
+        // Staff-only permanent deletion. Do not silently discard the metadata
+        // even if the underlying R2 object was previously removed by hand.
+        const remove=document.createElement("button");
+        remove.type="button";
+        remove.className="cat-photo-delete";
+        remove.title="Delete photo";
+        remove.setAttribute("aria-label","Delete photo: "+(photo.caption||"Untitled portrait"));
+        const icon=document.createElementNS("http://www.w3.org/2000/svg","svg");
+        icon.setAttribute("viewBox","0 0 24 24");
+        icon.setAttribute("width","18");icon.setAttribute("height","18");
+        icon.setAttribute("fill","none");icon.setAttribute("stroke","currentColor");
+        icon.setAttribute("stroke-width","2");icon.setAttribute("stroke-linecap","round");
+        icon.setAttribute("stroke-linejoin","round");icon.setAttribute("aria-hidden","true");
+        const shapes=[
+          ["path",{"d":"M3 6h18"}],
+          ["path",{"d":"M8 6V4h8v2"}],
+          ["path",{"d":"M19 6l-1 14H6L5 6"}],
+          ["path",{"d":"M10 10v7"}],
+          ["path",{"d":"M14 10v7"}]
+        ];
+        for(const [tag,attributes] of shapes){
+          const child=document.createElementNS("http://www.w3.org/2000/svg",tag);
+          for(const [name,value] of Object.entries(attributes))child.setAttribute(name,value);
+          icon.append(child);
+        }
+        remove.append(icon);
+        remove.addEventListener("click",async()=>{
+          const extra=photo.is_photo_of_day===1?
+            "\\n\\nThis is the current daily photo; you'll need to feature another afterwards.":"";
+          if(!confirm("Permanently delete this photo from the gallery and R2 storage (if present)?"+extra))
+            return;
+          remove.disabled=true;
+          if(feature)feature.disabled=true;
+          adminStatus.textContent="Removing photograph…";
+          try{
+            const response=await fetch("/api/gallery/admin",{
+              method:"DELETE",headers:{"Content-Type":"application/json"},
+              credentials:"same-origin",body:JSON.stringify({id:photo.id})
+            });
+            const isJson=(response.headers.get("content-type")||"").includes("application/json");
+            const result=isJson?await response.json():null;
+            if(!response.ok)throw new Error((result?.error||"Unable to delete photo")+" (HTTP "+response.status+")");
+            if(!result?.ok)throw new Error("Gallery API returned an unexpected response.");
+            await refresh();
+          }catch(error){
+            adminStatus.textContent=error.message||"Delete failed. Please retry.";
+            remove.disabled=false;
+            if(feature)feature.disabled=false;
+          }
+        });
+        actions.append(remove);
+        card.append(actions);
         list.append(card);
       }
     }catch(e){adminStatus.textContent=e.message;}

@@ -96,3 +96,41 @@ export async function onRequestPatch({request,env}){
     return out({ok:true});
   }catch(e){console.error(e);return out({error:"Unable to feature photo"},503)}
 }
+
+export async function onRequestDelete({request,env}){
+  const error=await guard(request,env);if(error)return error;
+  if(!(request.headers.get("Content-Type")||"").startsWith("application/json"))
+    return out({error:"JSON required"},415);
+  let data;
+  try{
+    const raw=await request.text();
+    if(raw.length>1000)return out({error:"Request too large"},413);
+    data=JSON.parse(raw);
+  }catch(_){return out({error:"Invalid JSON"},400);}
+  const id=typeof data?.id==="string"?data.id:"";
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id))
+    return out({error:"Invalid photo ID"},400);
+  try{
+    const photo=await env.DB.prepare(
+      "SELECT object_key,is_photo_of_day FROM gallery_photos WHERE id=?"
+    ).bind(id).first();
+    if(!photo)return out({error:"Photo no longer exists"},404);
+    // Delete only the exact R2 key assigned by our uploader, never an
+    // arbitrary object key even if a corrupted DB record points to one.
+    if(photo.object_key!=="photos/"+id+".jpg"){
+      console.error("Refused gallery deletion with unexpected object key");
+      return out({error:"Unexpected image storage reference; nothing deleted"},409);
+    }
+    // R2 delete is idempotent: a previously deleted image can still have
+    // its stale D1 metadata removed. Delete the object before its record so
+    // an R2 error cannot leave an untracked private file behind.
+    await env.PHOTOS.delete(photo.object_key);
+    const result=await env.DB.prepare("DELETE FROM gallery_photos WHERE id=?").bind(id).run();
+    if(result.meta.changes!==1)return out({error:"Could not remove gallery entry; please retry"},409);
+    // If it was featured, no photo is featured until staff picks another.
+    return out({ok:true,was_featured:photo.is_photo_of_day===1});
+  }catch(e){
+    console.error("Gallery photo deletion failed",e);
+    return out({error:"Could not delete photo. Please retry."},503);
+  }
+}
