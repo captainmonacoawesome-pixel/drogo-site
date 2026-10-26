@@ -31,3 +31,11 @@
 #cat-upload-status,#cat-admin-status{color:#cbd5e1}
 .cat-photo-card button{font:inherit;color:#191e2c;background:#efc780;border:0;border-radius:8px;padding:8px 11px;margin:0 12px 12px;cursor:pointer}
 @media(max-width:500px){.cat-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.cat-photo-card figcaption{padding:9px;font-size:.87rem}.cat-gallery-hero{padding-top:26px}}
+
+/* Photo moderation controls: feature on the left, delete icon on the right. */
+.cat-photo-actions{display:flex;align-items:center;gap:8px;padding:0 12px 12px}
+.cat-photo-card .cat-photo-actions button{margin:0}
+.cat-photo-card .cat-photo-delete{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;padding:8px 10px;background:#3d1f28;color:#ffd0d0;border:1px solid #a54d58;min-height:39px;min-width:39px}
+.cat-photo-card .cat-photo-delete:hover{background:#6a2632;color:white}
+.cat-photo-card .cat-photo-delete:focus-visible{outline:3px solid #fda4af;outline-offset:2px}
+.cat-photo-card .cat-photo-actions button:disabled{opacity:.5;cursor:wait}
