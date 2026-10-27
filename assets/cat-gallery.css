@@ -39,3 +39,28 @@
 .cat-photo-card .cat-photo-delete:hover{background:#6a2632;color:white}
 .cat-photo-card .cat-photo-delete:focus-visible{outline:3px solid #fda4af;outline-offset:2px}
 .cat-photo-card .cat-photo-actions button:disabled{opacity:.5;cursor:wait}
+
+/* Anonymous public hearts. Same style for gallery cards and featured photo. */
+.cat-photo-card{display:flex;flex-direction:column}
+.cat-photo-card figcaption{flex:1}
+.cat-heart-row{display:flex;align-items:center;padding:0 12px 13px}
+.cat-daily .cat-heart-row{padding:0 18px 18px}
+.cat-photo-card .cat-heart-button,.cat-daily .cat-heart-button{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-height:40px;padding:8px 13px;margin:0;
+  font:inherit;font-weight:750;font-variant-numeric:tabular-nums;
+  border:1px solid #566780;border-radius:999px;
+  background:#19243b;color:#f7d6df;cursor:pointer;
+  transition:background .15s,border-color .15s;
+}
+.cat-photo-card .cat-heart-button:hover,.cat-daily .cat-heart-button:hover{background:#34304b;border-color:#ef9aaf}
+.cat-heart-button svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cat-photo-card .cat-heart-button.is-liked,.cat-daily .cat-heart-button.is-liked{color:#fecdd3;border-color:#e87990;background:#4c2335}
+.cat-heart-button.is-liked svg{fill:#fb7185;stroke:#fb7185}
+.cat-photo-card .cat-heart-button:focus-visible,.cat-daily .cat-heart-button:focus-visible{outline:3px solid #fda4af;outline-offset:3px}
+.cat-heart-button:disabled{opacity:.6;cursor:wait}
+#cat-reaction-status{min-height:1.4em;color:#f9c4cf;font-size:.9rem}
+@media(max-width:500px){
+  .cat-heart-row{padding:0 9px 10px}
+  .cat-photo-card .cat-heart-button{min-height:37px;padding:6px 10px}
+}
