@@ -5,8 +5,8 @@
   <title>The Drogo Gallery · Drogo Protocol</title>
   <meta name="description" content="An ongoing photographic record of Lord Squeak of Mushington, including Cat Pic of the Day.">
   <link rel="stylesheet" href="/assets/style.css">
-  <link rel="stylesheet" href="/assets/cat-gallery.css">
-  <script src="/assets/cat-gallery.js" defer></script>
+  <link rel="stylesheet" href="/assets/cat-gallery.css?v=hearts-1">
+  <script src="/assets/cat-gallery.js?v=hearts-1" defer></script>
   <script src="/assets/site-nav.js" defer></script>
 </head>
 <body>
@@ -33,7 +33,7 @@
 <header class="cat-gallery-hero">
   <p class="cat-eyebrow">THE ILLUSTRATED CHRONICLES OF</p>
   <h1>Lord Squeak of Mushington</h1>
-  <p class="muted">An official archive of unprecedented feline magnificence. All photographs approved by the household.</p>
+  <p class="muted">An official archive of unprecedented feline magnificence. All photographs approved by the household. Tap a heart to applaud His Lordship.</p>
 </header>
 <section id="cat-daily" class="cat-daily" hidden aria-labelledby="daily-title">
   <p class="cat-eyebrow">THE DAILY DROGO</p>
@@ -44,6 +44,7 @@
 </section>
 <section class="cat-gallery-section">
   <div class="cat-section-heading"><h2>The Royal Photo Gallery</h2><span id="cat-gallery-count">…</span></div>
+  <p id="cat-reaction-status" role="status" aria-live="polite"></p>
   <div id="cat-gallery-grid" class="cat-gallery-grid" aria-live="polite"><p class="muted">Preparing the royal portrait collection…</p></div>
 </section>
 <div class="card"><h2>The Weekly Mush</h2><p>Want a weekly selection of His Lordship's greatest portraits and worst behaviour?</p><p><a href="/weekly-mush/">Get the royal newsletter →</a></p></div>
