@@ -64,3 +64,20 @@
   .cat-heart-row{padding:0 9px 10px}
   .cat-photo-card .cat-heart-button{min-height:37px;padding:6px 10px}
 }
+
+
+/* Public gallery heart reactions. */
+.cat-heart-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px}
+.cat-photo-card .cat-heart,.cat-daily .cat-heart{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ min-width:66px;min-height:38px;margin:0;padding:7px 12px;
+ border:1px solid #80677b;border-radius:24px;background:#252137;
+ color:#f3c8d5;font:inherit;font-weight:800;cursor:pointer}
+.cat-heart-icon{font-size:1.3rem;line-height:1}
+.cat-heart-count{font-variant-numeric:tabular-nums}
+.cat-photo-card .cat-heart[aria-pressed="true"],.cat-daily .cat-heart[aria-pressed="true"]{
+ background:#5b203d;border-color:#ed79a1;color:#ffd0e2}
+.cat-heart:hover{border-color:#ffb2cf}
+.cat-heart:focus-visible{outline:3px solid #efc780;outline-offset:3px}
+.cat-heart:disabled{cursor:wait;opacity:.55}
+.cat-heart-message{font-size:.78rem;color:#ffc5cd}
