@@ -22,3 +22,12 @@
 - Only the owner/approved staff may upload. Visitors cannot upload to R2.
 - Gallery images are fetched via our backend using private R2 bindings and the D1 list.
 - No subscriber emails or notification automation have been enabled yet; that is the next project milestone.
+
+
+## Public gallery heart reactions
+
+Run `db/003_gallery_likes.sql` in each active gallery Cloudflare D1 database, production and preview. This is an additive migration and can be run more than once. The gallery keeps displaying photos before migration, but hides hearts until the new table exists.
+
+One UUID is stored in each browser's localStorage; the D1 primary key allows one active heart per UUID per photo, and tapping again removes it. The featured photo and its gallery card share the same reaction data. Deleting a photo through staff admin cascades to its likes (Cloudflare D1 foreign keys are enabled by default).
+
+This is a casual one-per-browser measure, not tamper-proof authentication: clearing browser data, using another browser/device, or scripting new IDs allows additional reactions. No visitor IP addresses are stored by this feature.
