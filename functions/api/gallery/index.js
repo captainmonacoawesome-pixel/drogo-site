@@ -23,10 +23,19 @@ CREATE TABLE IF NOT EXISTS gallery_heart_rate (
 ) WITHOUT ROWID;`;
 let schemaReady;
 export function ensureHeartSchema(db) {
-  // Fixed DDL, never constructed from visitor input. One-time per Worker
-  // isolate; also safe if the database was already migrated manually.
+  // Avoid DDL on normal reads after migration. D1 exec is only used to
+  // bootstrap a database if one of the two heart tables is missing.
+  // Memoisation covers a single Worker isolate; failed attempts are retried.
   if (!schemaReady) {
-    schemaReady=db.exec(TABLE_SQL).catch(error=>{schemaReady=null;throw error;});
+    schemaReady=(async()=>{
+      const found=await db.prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('gallery_hearts','gallery_heart_rate')"
+      ).all();
+      const names=new Set((found.results||[]).map(row=>row.name));
+      if(!names.has("gallery_hearts")||!names.has("gallery_heart_rate")){
+        await db.exec(TABLE_SQL);
+      }
+    })().catch(error=>{schemaReady=null;throw error;});
   }
   return schemaReady;
 }
@@ -59,36 +68,53 @@ export function heartCookie(value) {
 }
 
 export async function onRequestGet({request,env}) {
-  if (!env.DB || !env.PHOTOS) return json({photos:[],message:"Gallery coming soon"},503);
-  try {
-    const q=await env.DB.prepare(
-      "SELECT id, caption, created_at, is_photo_of_day FROM gallery_photos ORDER BY created_at DESC LIMIT 100"
+  if(!env.DB||!env.PHOTOS)
+    return json({photos:[],message:"Gallery coming soon"},503);
+  let photos;
+  try{
+    const result=await env.DB.prepare(
+      "SELECT id,caption,created_at,is_photo_of_day FROM gallery_photos ORDER BY created_at DESC LIMIT 100"
     ).all();
-    const photos=q.results||[];
+    photos=result.results||[];
+  }catch(e){
+    console.error("Gallery photos query failed",e?.name||"Error");
+    return json({error:"Gallery temporarily unavailable",stage:"photos"},503);
+  }
+
+  // A reaction subsystem failure should never make all photographs disappear.
+  // Do not show invented zero counts when hearts are unavailable.
+  let counts=null,mine=new Set(),stage="schema";
+  try{
     await ensureHeartSchema(env.DB);
-    const counts = await env.DB.prepare(
+    stage="counts";
+    const tally=await env.DB.prepare(
       "SELECT photo_id,COUNT(*) AS n FROM gallery_hearts GROUP BY photo_id"
     ).all();
-    const byId=new Map((counts.results||[]).map(row=>[row.photo_id,Number(row.n)||0]));
-    let mine=new Set();
+    counts=new Map((tally.results||[]).map(row=>[row.photo_id,Number(row.n)||0]));
+    stage="viewer";
     const token=cookieToken(request);
-    if(token) {
+    if(token){
       const hash=await digestIdentity(token,env.RATE_LIMIT_PEPPER,"browser");
       const result=await env.DB.prepare(
         "SELECT photo_id FROM gallery_hearts WHERE visitor_hash=?"
       ).bind(hash).all();
       mine=new Set((result.results||[]).map(row=>row.photo_id));
     }
-    return json({photos:photos.map(p=>({
+  }catch(e){
+    console.error("Gallery reaction stage failed",stage,e?.name||"Error");
+    // Don't leak SQL, visitor identifiers, or secret configuration.
+    counts=null;
+  }
+  const heartsAvailable=counts!==null;
+  return json({
+    hearts_available:heartsAvailable,
+    ...(heartsAvailable?{}:{hearts_unavailable_stage:stage}),
+    photos:photos.map(p=>({
       id:p.id,caption:p.caption,created_at:p.created_at,
       is_photo_of_day:p.is_photo_of_day===1,
       image_url:"/api/gallery/image/"+encodeURIComponent(p.id),
-      heart_count:byId.get(p.id)||0,
-      hearted:mine.has(p.id)
-    }))});
-  } catch(e) {
-    console.error("Gallery list/heart read failed",e?.name||"Error");
-    // Do not display fictitious zero votes if the count query fails.
-    return json({error:"Gallery temporarily unavailable"},503);
-  }
+      heart_count:heartsAvailable?(counts.get(p.id)||0):null,
+      hearted:heartsAvailable?mine.has(p.id):false
+    }))
+  });
 }
