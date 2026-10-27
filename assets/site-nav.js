@@ -30,6 +30,11 @@
   });
   }
 
+  // Close the Cat Sitting menu on outside click or Escape.
+  const sitterMenu=wrapper?.querySelector(".nav-submenu");
+  document.addEventListener("pointerdown",event=>{if(sitterMenu?.open&&!sitterMenu.contains(event.target))sitterMenu.open=false;});
+  document.addEventListener("keydown",event=>{if(event.key==="Escape"&&sitterMenu?.open){sitterMenu.open=false;sitterMenu.querySelector("summary")?.focus();}});
+
   // Staff shortcuts are not present in the public HTML. They are only
   // inserted after Cloudflare Access validates the existing staff session.
   async function showStaffMenu() {

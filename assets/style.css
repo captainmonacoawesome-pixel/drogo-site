@@ -93,3 +93,16 @@ h2{margin:22px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
  }
  .nav .menu .sitter-dropdown-links a{white-space:normal;padding:9px 12px}
 }
+
+
+/* Cat Sitting dropdown for desktop and compact mobile navigation. */
+.nav-submenu{position:relative;min-width:135px}
+.nav-submenu summary{list-style:none;cursor:pointer;user-select:none;padding:8px 10px;border-radius:10px;border:1px solid rgba(51,65,85,.8);background:rgba(2,6,23,.25);white-space:nowrap}
+.nav-submenu summary::-webkit-details-marker{display:none}
+.nav-submenu summary.active,.nav-submenu[open]>summary{border-color:rgba(96,165,250,.8);background:rgba(96,165,250,.12)}
+.nav-chevron{font-size:.75em;margin-left:4px}
+.nav-submenu-links{position:absolute;top:calc(100% + 7px);right:0;min-width:190px;display:flex;flex-direction:column;gap:4px;padding:8px;border-radius:12px;border:1px solid var(--line);background:#111e35;box-shadow:0 10px 28px rgba(0,0,0,.45);z-index:52}
+.nav-submenu:not([open]) .nav-submenu-links{display:none}
+.menu .nav-submenu-links a{display:block;text-align:left}
+.nav-submenu summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(max-width:760px){.nav-submenu{width:100%}.nav-submenu summary{padding:9px 12px}.nav-submenu-links{position:static;box-shadow:none;margin:5px 0 4px 10px;min-width:0}.nav .nav-submenu-links a{padding:9px 12px}}
