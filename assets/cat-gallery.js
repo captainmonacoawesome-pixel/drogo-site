@@ -7,6 +7,7 @@
   const dailyCaption=document.querySelector("#cat-daily-caption");
   const status=document.querySelector("#cat-reaction-status");
   let sending=false;
+  let heartsAvailable=true;
   function allHeartButtons(){
     return Array.from(document.querySelectorAll(".cat-heart-button"));
   }
@@ -86,14 +87,18 @@
       badge.textContent="✦ CAT PIC OF THE DAY";
       caption.append(document.createElement("br"),badge);
     }
-    fig.append(img,caption,heartControl(photo));
+    fig.append(img,caption);
+    if(heartsAvailable)fig.append(heartControl(photo));
     return fig;
   }
   async function load(){
     try{
       const response=await fetch("/api/gallery",{cache:"no-store",credentials:"same-origin"});
       if(!response.ok)throw new Error("Gallery unavailable");
-      const {photos}=await response.json();
+      const result=await response.json();
+      const {photos}=result;
+      heartsAvailable=result.hearts_available!==false;
+      status.textContent=heartsAvailable?"":"Heart reactions are temporarily unavailable. The photographs are still here.";
       const items=Array.isArray(photos)?photos:[];
       grid.replaceChildren();
       count.textContent=items.length+" photos";
@@ -111,12 +116,12 @@
         dailyImage.src=featured.image_url;
         dailyImage.alt=featured.caption||"Cat Pic of the Day";
         dailyCaption.textContent=featured.caption||"Today's royal portrait.";
-        daily.querySelector("figure").append(heartControl(featured));
+        if(heartsAvailable)daily.querySelector("figure").append(heartControl(featured));
       }else{
         daily.hidden=true;
       }
       // The featured picture also appears in the grid; keep both in sync.
-      for(const p of items)updateHearts(p.id,Boolean(p.hearted),Number(p.heart_count)||0);
+      if(heartsAvailable)for(const p of items)updateHearts(p.id,Boolean(p.hearted),Number(p.heart_count)||0);
     }catch(_){
       grid.textContent="The royal portrait collection is temporarily unavailable.";
       count.textContent="—";
