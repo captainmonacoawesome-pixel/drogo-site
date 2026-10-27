@@ -1,126 +1,76 @@
-// Public gallery. Captions render as text; reactions are scoped to this browser.
-(() => {
-  const grid=document.querySelector("#cat-gallery-grid");
-  const count=document.querySelector("#cat-gallery-count");
-  const daily=document.querySelector("#cat-daily");
-  const dailyImage=document.querySelector("#cat-daily-image");
-  const dailyCaption=document.querySelector("#cat-daily-caption");
-  const status=document.querySelector("#cat-reaction-status");
-  let sending=false;
-  function allHeartButtons(){
-    return Array.from(document.querySelectorAll(".cat-heart-button"));
-  }
-  function updateHearts(id,liked,total){
-    for(const b of allHeartButtons()){
-      if(b.dataset.photoId!==id)continue;
-      b.classList.toggle("is-liked",liked);
-      b.setAttribute("aria-pressed",String(liked));
-      b.setAttribute("aria-label",(liked?"Remove your heart from":"Give a heart to")+
-        " this photo. "+total+" hearts.");
-      b.title=liked?"Remove your heart":"Give this photo a heart";
-      b.querySelector(".cat-heart-count").textContent=String(total);
-    }
-  }
-  async function changeHeart(photo){
-    if(sending)return;
-    sending=true;
-    for(const b of allHeartButtons())b.disabled=true;
-    status.textContent="";
-    const next=!photo.hearted;
-    try{
-      const response=await fetch("/api/gallery/heart",{
-        method:"POST",
-        credentials:"same-origin",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({id:photo.id,liked:next})
-      });
-      const body=(response.headers.get("content-type")||"").includes("application/json")?
-        await response.json():null;
-      if(!response.ok||!body?.ok)throw new Error(body?.error||
-        "Hearts are temporarily unavailable (HTTP "+response.status+")");
-      photo.hearted=Boolean(body.liked);
-      photo.heart_count=Number(body.heart_count)||0;
-      updateHearts(photo.id,photo.hearted,photo.heart_count);
-    }catch(e){
-      status.textContent=e.message||"Unable to save your heart; try again.";
-    }finally{
-      sending=false;
-      for(const b of allHeartButtons())b.disabled=false;
-    }
-  }
-  function heartControl(photo){
-    const row=document.createElement("div");
-    row.className="cat-heart-row";
-    const button=document.createElement("button");
-    button.type="button";
-    button.className="cat-heart-button";
-    button.dataset.photoId=photo.id;
-    const heart=document.createElementNS("http://www.w3.org/2000/svg","svg");
-    heart.setAttribute("viewBox","0 0 24 24");
-    heart.setAttribute("width","21");
-    heart.setAttribute("height","21");
-    heart.setAttribute("aria-hidden","true");
-    heart.setAttribute("fill","currentColor");
-    const path=document.createElementNS("http://www.w3.org/2000/svg","path");
-    path.setAttribute("d","M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z");
-    heart.append(path);
-    const total=document.createElement("span");
-    total.className="cat-heart-count";
-    button.append(heart,total);
-    button.addEventListener("click",()=>changeHeart(photo));
-    row.append(button);
-    return row;
-  }
-  function photoCard(photo){
-    const fig=document.createElement("figure");
-    fig.className="cat-photo-card";
-    const img=document.createElement("img");
-    img.src=photo.image_url;
-    img.alt=photo.caption||"A photograph of Drogo";
-    img.loading="lazy";img.decoding="async";
-    const caption=document.createElement("figcaption");
-    caption.textContent=photo.caption||"His Lordship declined to provide a caption.";
-    if(photo.is_photo_of_day){
-      const badge=document.createElement("span");
-      badge.className="cat-photo-badge";
-      badge.textContent="✦ CAT PIC OF THE DAY";
-      caption.append(document.createElement("br"),badge);
-    }
-    fig.append(img,caption,heartControl(photo));
-    return fig;
-  }
-  async function load(){
-    try{
-      const response=await fetch("/api/gallery",{cache:"no-store",credentials:"same-origin"});
-      if(!response.ok)throw new Error("Gallery unavailable");
-      const {photos}=await response.json();
-      const items=Array.isArray(photos)?photos:[];
-      grid.replaceChildren();
-      count.textContent=items.length+" photos";
-      if(!items.length){
-        const p=document.createElement("p");
-        p.className="muted";
-        p.textContent="The royal portrait collection is being assembled. Check back soon.";
-        grid.append(p);
-      }
-      for(const item of items)grid.append(photoCard(item));
-      const featured=items.find(p=>p.is_photo_of_day);
-      daily.querySelector(".cat-heart-row")?.remove();
-      if(featured){
-        daily.hidden=false;
-        dailyImage.src=featured.image_url;
-        dailyImage.alt=featured.caption||"Cat Pic of the Day";
-        dailyCaption.textContent=featured.caption||"Today's royal portrait.";
-        daily.querySelector("figure").append(heartControl(featured));
-      }else{
-        daily.hidden=true;
-      }
-      // The featured picture also appears in the grid; keep both in sync.
-      for(const p of items)updateHearts(p.id,Boolean(p.hearted),Number(p.heart_count)||0);
-    }catch(_){
-      grid.textContent="The royal portrait collection is temporarily unavailable.";
-      count.textContent="—";
-    }
-  }
-  load();
+// Public photo gallery: captions are always rendered as text, never HTML.
+(()=>{
+ const grid=document.querySelector("#cat-gallery-grid"),count=document.querySelector("#cat-gallery-count");
+ const daily=document.querySelector("#cat-daily"),dailyImage=document.querySelector("#cat-daily-image"),dailyCaption=document.querySelector("#cat-daily-caption");
+ const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+ const visitorId=(()=>{
+   try{const key="drogo-gallery-visitor-v1",saved=localStorage.getItem(key);
+     if(uuid.test(saved||""))return saved;
+     const id=crypto.randomUUID();localStorage.setItem(key,id);return id;
+   }catch(_){return crypto.randomUUID();}
+ })();
+ function buttonsFor(id){return [...document.querySelectorAll(".cat-heart")].filter(b=>b.dataset.photoId===id);}
+ function sync(id,likes,liked){
+   for(const b of buttonsFor(id)){
+     b.setAttribute("aria-pressed",String(Boolean(liked)));
+     b.setAttribute("aria-label",(liked?"Remove your heart":"Give this photo a heart")+" ("+likes+" hearts)");
+     b.querySelector(".cat-heart-count").textContent=String(likes);
+   }
+ }
+ function heartButton(photo){
+   const row=document.createElement("div");row.className="cat-heart-row";
+   const b=document.createElement("button");b.type="button";b.className="cat-heart";b.dataset.photoId=photo.id;
+   const icon=document.createElement("span");icon.textContent="♥";icon.className="cat-heart-icon";icon.setAttribute("aria-hidden","true");
+   const n=document.createElement("span");n.className="cat-heart-count";b.append(icon,n);
+   const msg=document.createElement("span");msg.className="cat-heart-message";msg.setAttribute("role","status");
+   row.append(b,msg);
+   b.setAttribute("aria-pressed",String(Boolean(photo.viewer_liked)));
+   b.setAttribute("aria-label",(photo.viewer_liked?"Remove your heart":"Give this photo a heart")+" ("+(Number(photo.like_count)||0)+" hearts)");
+   n.textContent=String(Number(photo.like_count)||0);
+   b.addEventListener("click",async()=>{
+     const liked=b.getAttribute("aria-pressed")==="true",all=buttonsFor(photo.id);
+     for(const other of all){other.disabled=true;other.parentElement.querySelector(".cat-heart-message").textContent="";}
+     try{
+       const response=await fetch("/api/gallery/likes",{
+         method:liked?"DELETE":"POST",headers:{"Content-Type":"application/json"},
+         body:JSON.stringify({id:photo.id,visitor_id:visitorId})
+       });
+       const result=await response.json();
+       if(!response.ok||!result.ok)throw new Error(result.error||"Could not save heart");
+       sync(photo.id,result.like_count,result.viewer_liked);
+     }catch(err){msg.textContent=err.message||"Could not save heart. Try again.";}
+     finally{for(const other of all)other.disabled=false;}
+   });
+   return row;
+ }
+ function card(photo,heartsEnabled){
+   const fig=document.createElement("figure");fig.className="cat-photo-card";
+   const img=document.createElement("img");img.src=photo.image_url;img.alt=photo.caption||"A photograph of Drogo";
+   img.loading="lazy";img.decoding="async";
+   const caption=document.createElement("figcaption");
+   caption.textContent=photo.caption||"His Lordship declined to provide a caption.";
+   if(photo.is_photo_of_day){
+     const badge=document.createElement("span");badge.className="cat-photo-badge";
+     badge.textContent="✦ CAT PIC OF THE DAY";caption.append(document.createElement("br"),badge);
+   }
+   if(heartsEnabled)caption.append(heartButton(photo));
+   fig.append(img,caption);return fig;
+ }
+ async function load(){
+   try{
+     const response=await fetch("/api/gallery",{cache:"no-store",headers:{"X-Gallery-Visitor":visitorId}});
+     if(!response.ok)throw new Error("Gallery unavailable");
+     const data=await response.json(),photos=Array.isArray(data.photos)?data.photos:[],enabled=data.reactions_enabled===true;
+     grid.replaceChildren();count.textContent=photos.length+" photos";
+     if(!photos.length){const p=document.createElement("p");p.className="muted";p.textContent="The royal portrait collection is being assembled. Check back soon.";grid.append(p);}
+     for(const photo of photos)grid.append(card(photo,enabled));
+     const featured=photos.find(p=>p.is_photo_of_day);daily.hidden=!featured;
+     if(featured){
+       dailyImage.src=featured.image_url;dailyImage.alt=featured.caption||"Cat Pic of the Day";
+       dailyCaption.textContent=featured.caption||"Today's royal portrait.";
+       if(enabled)dailyCaption.append(heartButton(featured));
+     }
+   }catch(_){daily.hidden=true;grid.textContent="The royal portrait collection is temporarily unavailable.";count.textContent="—";}
+ }
+ load();
 })();
