@@ -5,8 +5,10 @@
   const menu = wrapper?.querySelector("#primary-navigation");
   if (wrapper && toggle && menu) {
 
+  const sitterMenu = menu.querySelector(".sitter-dropdown");
   const setOpen = open => {
     menu.classList.toggle("is-open", open);
+    if(!open && sitterMenu) sitterMenu.open = false;
     toggle.setAttribute("aria-expanded", String(open));
     toggle.querySelector("[aria-hidden]")?.replaceChildren(document.createTextNode(open ? "×" : "☰"));
   };
@@ -14,10 +16,17 @@
   wrapper.classList.add("nav-ready");
   toggle.addEventListener("click", () => setOpen(!menu.classList.contains("is-open")));
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && menu.classList.contains("is-open")) {
+    if(event.key !== "Escape") return;
+    if(sitterMenu?.open){
+      sitterMenu.open = false;
+      sitterMenu.querySelector("summary")?.focus();
+    }else if(menu.classList.contains("is-open")){
       setOpen(false);
       toggle.focus();
     }
+  });
+  document.addEventListener("pointerdown", event => {
+    if(sitterMenu?.open && !sitterMenu.contains(event.target))sitterMenu.open = false;
   });
   }
 
