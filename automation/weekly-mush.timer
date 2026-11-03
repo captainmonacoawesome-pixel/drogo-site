@@ -1,0 +1,10 @@
+[Unit]
+Description=Weekly Mush Sunday evening delivery
+
+[Timer]
+OnCalendar=Sun *-*-* 19:00:00 Australia/Melbourne
+Persistent=true
+Unit=weekly-mush.service
+
+[Install]
+WantedBy=timers.target
