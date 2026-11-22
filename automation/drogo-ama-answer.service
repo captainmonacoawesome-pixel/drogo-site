@@ -1,0 +1,15 @@
+[Unit]
+Description=Answer fresh Ask Meow Anything questions as Drogo
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+DynamicUser=yes
+StateDirectory=drogo-ama-answer
+EnvironmentFile=/etc/drogo-ama-answer.env
+ExecStart=/usr/bin/python3 /opt/drogo-ama-answer/ama_answer.py
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
