@@ -61,7 +61,8 @@ def compose(row, model):
     return None
 
 def run(preview):
-    headers = {"CF-Access-Client-Id": os.environ["CF_CLIENT_ID"],
+    headers = {"User-Agent": "Drogo-AMA-Ripper/1.0",
+               "CF-Access-Client-Id": os.environ["CF_CLIENT_ID"],
                "CF-Access-Client-Secret": os.environ["CF_CLIENT_SECRET"], "Origin": SITE}
     holds = sqlite3.connect(os.path.join(os.environ["STATE_DIRECTORY"], "review.sqlite"))
     holds.execute("CREATE TABLE IF NOT EXISTS held (id TEXT PRIMARY KEY)")
