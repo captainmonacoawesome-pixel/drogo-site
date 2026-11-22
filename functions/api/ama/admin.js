@@ -55,6 +55,17 @@ export async function onRequestGet({request,env}) {
   if (!await verifyAccess(request,env)) return reply({error:"Unauthorized"},401);
   if (!env.DB) return reply({error:"Database not configured"},503);
   try {
+    const query = new URL(request.url).searchParams;
+    if (query.has("since")) {
+      const since = query.get("since");
+      const after = query.get("after") || "";
+      if (!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(since) ||
+          (after && !/^[a-f0-9-]{36}$/.test(after))) return reply({error:"Invalid cursor"},400);
+      const page = await env.DB.prepare(
+        "SELECT id,display_name,question FROM ama_questions WHERE status='pending' AND created_at>=? AND id>? ORDER BY id LIMIT 50"
+      ).bind(since,after).all();
+      return reply({questions:page.results || [], queueVersion:1});
+    }
     const data=await env.DB.prepare(
       "SELECT id,display_name,question,created_at FROM ama_questions WHERE status='pending' ORDER BY created_at ASC LIMIT 100"
     ).all();
